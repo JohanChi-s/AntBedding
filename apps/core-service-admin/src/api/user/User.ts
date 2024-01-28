@@ -4,6 +4,7 @@ import { JsonValue } from "type-fest";
 export type User = {
   comments?: Array<Comment>;
   createdAt: Date;
+  email: string;
   firstName: string | null;
   id: string;
   lastName: string | null;
