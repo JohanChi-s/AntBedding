@@ -1,5 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Admin, DataProvider, Resource } from "react-admin";
+import React, { useEffect, useState, useRef } from "react";
+import { Admin, AuthProvider, DataProvider, Resource } from "react-admin";
+import Keycloak from "keycloak-js";
+import {
+  keycloakClient,
+  keycloakAuthProvider,
+} from "./auth-provider/ra-auth-keycloak";
 import buildGraphQLProvider from "./data-provider/graphqlDataProvider";
 import { theme } from "./theme/theme";
 import Login from "./Login";
@@ -37,10 +42,12 @@ import { TransporterList } from "./transporter/TransporterList";
 import { TransporterCreate } from "./transporter/TransporterCreate";
 import { TransporterEdit } from "./transporter/TransporterEdit";
 import { TransporterShow } from "./transporter/TransporterShow";
-import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
 const App = (): React.ReactElement => {
   const [dataProvider, setDataProvider] = useState<DataProvider | null>(null);
+  const [keycloak, setKeycloak] = useState<Keycloak | null>();
+  const authProvider = useRef<AuthProvider | null>();
+
   useEffect(() => {
     buildGraphQLProvider
       .then((provider: any) => {
@@ -50,15 +57,30 @@ const App = (): React.ReactElement => {
         console.log(error);
       });
   }, []);
-  if (!dataProvider) {
+
+  useEffect(() => {
+    const initKeyCloakClient = async () => {
+      await keycloakClient.init({
+        onLoad: "login-required",
+      });
+      authProvider.current = keycloakAuthProvider(keycloakClient, {});
+      setKeycloak(keycloakClient);
+    };
+    if (!keycloak) {
+      initKeyCloakClient();
+    }
+  }, [keycloak]);
+
+  if (!dataProvider || !authProvider.current) {
     return <div>Loading</div>;
   }
+
   return (
     <div className="App">
       <Admin
         title={"Core Service"}
         dataProvider={dataProvider}
-        authProvider={jwtAuthProvider}
+        authProvider={authProvider.current}
         theme={theme}
         dashboard={Dashboard}
         loginPage={Login}

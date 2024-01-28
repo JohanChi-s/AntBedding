@@ -33,6 +33,14 @@ class UserCreateInput {
   comments?: CommentCreateNestedManyWithoutUsersInput;
 
   @ApiProperty({
+    required: true,
+    type: String,
+  })
+  @IsString()
+  @Field(() => String)
+  email!: string;
+
+  @ApiProperty({
     required: false,
     type: String,
   })

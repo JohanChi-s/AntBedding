@@ -10,6 +10,7 @@ generator client {
 model User {
   comments  Comment[]
   createdAt DateTime  @default(now())
+  email     String    @unique
   firstName String?
   id        String    @id @default(cuid())
   lastName  String?
